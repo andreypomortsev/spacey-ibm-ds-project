@@ -66,3 +66,4 @@ SpaceX, a pioneering company in the commercial space age, has revolutionized spa
 ![Success Rate by Year](./EDA_plots/eda_dataviz_success_by_year_plot.png)
 ![Success Rate by Orbit](./EDA_plots/eda_dataviz_success_by_orbit.png)
 ![Launch Site vs Payload Mass](./EDA_plots/eda_dataviz_launchsite_vs_payloadmass_plot.png)
+![Selecting the Optimal Model](./EDA_plots/accuracy_comparison.png)
