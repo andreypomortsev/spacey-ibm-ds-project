@@ -55,7 +55,7 @@ SpaceX, a pioneering company in the commercial space age, has revolutionized spa
   * Explore the pie chart showing total successful launches or the success vs. failure breakdown for a specific site.
   * Adjust the payload range using the slider.
   * View the scatter chart illustrating the correlation between payload and launch success.
-    ![Dash app](./EDA_plots/spacex_dash_app_screenshot.png)
+    ![Dash app](./EDA_plots/spacex_dash_app_screenshot2.png)
 
 ### 5. Predictive Analysis using Classification Models
 
