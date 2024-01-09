@@ -41,7 +41,7 @@ SpaceX, a pioneering company in the commercial space age, has revolutionized spa
   Make sure you have the required libraries installed. You can install them using the following:
   
   ```bash
-  pip install pandas dash plotly
+  pip install pandas dash plotly colorcet
   ```
   Then:
   ```bash
