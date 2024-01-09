@@ -1,14 +1,66 @@
+"""
+SpaceX Launch Dashboard
+
+This module creates a Dash web application for visualizing SpaceX launch data.
+It includes pie charts for showing the percentage of successful launches across all sites
+and success vs. failure counts for a specific launch site. Additionally, it features
+a scatter chart displaying the correlation between payload mass and launch success.
+
+Dependencies:
+- pandas
+- dash
+- plotly.express
+- requests
+- io
+- colorcet
+
+Data Source:
+- SpaceX launch data is fetched from the following URL:
+  https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/
+  IBM-DS0321EN-SkillsNetwork/datasets/spacex_launch_dash.csv
+
+Usage:
+- Run this module to start the Dash web application and navigate to the provided URL.
+
+Authors:
+- Yan Luo https://www.linkedin.com/in/yan-luo-96288783/
+- Andrey Pomortsev https://www.linkedin.com/in/andreypomortsev/
+"""
+import io
+import requests
+
 import pandas as pd
-import dash
-from dash import html
-import dash_core_components as dcc
-from dash.dependencies import Input, Output
 import plotly.express as px
 
+import dash
+from dash import html
+from dash.dependencies import Input, Output
+import dash_core_components as dcc
+
+import colorcet as cc
+
+
+DATA_URL = (
+    "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/"
+    "IBM-DS0321EN-SkillsNetwork/datasets/spacex_launch_dash.csv"
+)
+
+try:
+    response = requests.get(DATA_URL, timeout=2)
+    response.raise_for_status()  # Raises an HTTPError for bad responses (4xx or 5xx)
+except requests.exceptions.RequestException as e:
+    raise f"Error fetching or processing data from {DATA_URL}: {e}"
+
 # Read the airline data into pandas dataframe
-spacex_df = pd.read_csv("spacex_launch_dash.csv")
+spacex_df = pd.read_csv(io.BytesIO(response.content))
 max_payload = spacex_df["Payload Mass (kg)"].max()
 min_payload = spacex_df["Payload Mass (kg)"].min()
+
+# Define a custom colorblind-friendly palette for pie-chart
+COLORS = ["#377eb8", "#ff7f00", "#f781bf", "#4daf4a"]
+
+# Define a presumably colorblind-friendly palette for scatter plots
+PALETTE = cc.glasbey_light
 
 # Create a dash application
 app = dash.Dash(__name__)
@@ -79,27 +131,31 @@ def get_pie_chart(entered_site):
         fig = px.pie(
             data_frame=filtered_df,
             names="Launch Site",
-            title="Total Success Launches By Site",
+            title="Percentage of Successful Launches Across All Sites",
+            color="Launch Site",
+            color_discrete_map=dict(zip(filtered_df["Launch Site"].unique(), COLORS)),
         )
         return fig
+
     # Filter the DataFrame based on the selected site and create a pie chart
     filtered_df = filtered_df[filtered_df["Launch Site"] == entered_site]
     fig = px.pie(
         data_frame=filtered_df,
         names="class",
-        title=f"Success vs. Failure for {entered_site}",
+        title=f"Success vs. Failure for Launch Site: {entered_site}",
+        color="class",
+        color_discrete_map={1: COLORS[1], 0: COLORS[3]},
     )
     return fig
 
 
 # TASK 4:
-# Add a callback function for `site-dropdown` and `payload-slider` as inputs, `success-payload-scatter-chart` as output
+# Add a callback function for `site-dropdown` and `payload-slider` as inputs,
+# `success-payload-scatter-chart` as output
 @app.callback(
     Output(component_id="success-payload-scatter-chart", component_property="figure"),
-    [
-        Input(component_id="site-dropdown", component_property="value"),
-        Input(component_id="payload-slider", component_property="value"),
-    ],
+    Input(component_id="site-dropdown", component_property="value"),
+    Input(component_id="payload-slider", component_property="value"),
 )
 def get_scatter_chart(entered_site, selected_payload_range):
     """
@@ -117,11 +173,17 @@ def get_scatter_chart(entered_site, selected_payload_range):
     if entered_site == "ALL":
         # No site-specific filtering
         filtered_df = spacex_df
-        title = "Payload Success Correlation with Payload Mass (All Sites)"
     else:
         # Filter the DataFrame based on the selected site
         filtered_df = spacex_df[spacex_df["Launch Site"] == entered_site]
-        title = f"Payload Success Correlation with Payload Mass ({entered_site})"
+
+    # Title
+    title = (
+        f"Site: {entered_site}, "
+        f"Payload mass is between "
+        f"{int(selected_payload_range[0]):8,d} kg and "
+        f"{int(selected_payload_range[1]):8,d} kg"
+    )
 
     # Filter the DataFrame based on the selected payload range
     filtered_df = filtered_df[
@@ -137,7 +199,11 @@ def get_scatter_chart(entered_site, selected_payload_range):
         color="Booster Version Category",
         title=title,
         labels={"class": "Launch Outcome", "Payload Mass (kg)": "Payload Mass"},
-        category_orders={"class": ["Failure", "Success"]},
+        category_orders={"class": [0, 1]},
+        color_discrete_map=dict(
+            zip(filtered_df["Booster Version Category"].unique(), PALETTE)
+        ),
+        size="Payload Mass (kg)",  # Add this line to set the size
     )
 
     # Update y-axis ticks and rotate labels
