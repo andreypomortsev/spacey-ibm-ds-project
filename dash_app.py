@@ -90,7 +90,7 @@ app.layout = html.Div(
         # If a specific launch site was selected, show the Success vs. Failed counts for the site
         html.Div(dcc.Graph(id="success-pie-chart")),
         html.Br(),
-        html.P("Payload range (Kg):"),
+        html.P("Payload range, Kg:"),
         # TASK 3: Add a slider to select payload range
         dcc.RangeSlider(
             id="payload-slider",
