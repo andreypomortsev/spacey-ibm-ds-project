@@ -135,17 +135,23 @@ def get_pie_chart(entered_site):
             color="Launch Site",
             color_discrete_map=dict(zip(filtered_df["Launch Site"].unique(), COLORS)),
         )
+
         return fig
 
     # Filter the DataFrame based on the selected site and create a pie chart
     filtered_df = filtered_df[filtered_df["Launch Site"] == entered_site]
     fig = px.pie(
         data_frame=filtered_df,
-        names="class",
+        names=filtered_df['class'].map({0: 'Failure', 1: 'Success'}),
         title=f"Success vs. Failure for Launch Site: {entered_site}",
         color="class",
-        color_discrete_map={1: COLORS[1], 0: COLORS[3]},
+        color_discrete_map={1: COLORS[3], 0: COLORS[1]},
     )
+    # Add custom legend
+    fig.update_layout(
+        legend=dict(title=dict(text="Outcome"))
+    )
+
     return fig
 
 
